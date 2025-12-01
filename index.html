@@ -222,6 +222,7 @@
       font-size: 30px;
       border: none;
       cursor: pointer;
+      z-index: 15;
     }
 
     /* Tabs top */
@@ -243,6 +244,7 @@
       font-size: 12px;
       color: var(--text-muted);
       font-weight: 500;
+      cursor: pointer;
     }
 
     .tab-pill.active {
@@ -736,8 +738,31 @@
     </div>
   </div>
 
-  <script>
-    // Datos fake iniciales (después se reemplazan por LocalStorage)
+  <!-- SCRIPT: Flowi + Firebase -->
+  <script type="module">
+    // Firebase SDK (v12.6.0)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    // Config de tu proyecto
+    const firebaseConfig = {
+      apiKey: "AIzaSyClDJTfD7tMClhUH9unWW_x93FYAIDcM2I",
+      authDomain: "finanzas-4-0.firebaseapp.com",
+      projectId: "finanzas-4-0",
+      storageBucket: "finanzas-4-0.firebasestorage.app",
+      messagingSenderId: "740934543720",
+      appId: "1:740934543720:web:b51c2d488c048a6b0fcedd"
+    };
+
+    // Inicializar Firebase y Firestore
+    const appFB = initializeApp(firebaseConfig);
+    const db = getFirestore(appFB);
+
+    // Datos fake por ahora (después los reemplazamos con Firebase)
     const sampleDays = [
       {
         date: "Hoy",
@@ -782,8 +807,10 @@
       return "$ " + value.toLocaleString("es-AR");
     }
 
+    // Render de UI
     function renderDays() {
       const container = document.getElementById("daysContainer");
+      if (!container) return;
       container.innerHTML = "";
       sampleDays.forEach(day => {
         const card = document.createElement("article");
@@ -811,6 +838,7 @@
 
     function renderBubbles() {
       const container = document.getElementById("bubblesContainer");
+      if (!container) return;
       container.innerHTML = "";
       sampleBubbles.forEach(b => {
         const div = document.createElement("div");
@@ -827,6 +855,7 @@
 
     function renderGoals() {
       const container = document.getElementById("goalsContainer");
+      if (!container) return;
       container.innerHTML = "";
       sampleGoals.forEach(g => {
         const pct = Math.round((g.saved / g.target) * 100);
@@ -851,6 +880,7 @@
       });
     }
 
+    // Tabs (arriba y abajo)
     function setupTabs() {
       const tabButtons = document.querySelectorAll(".tab-pill");
       const navItems = document.querySelectorAll(".nav-item");
@@ -861,16 +891,14 @@
       };
 
       function activate(tab) {
-        // top pills
         tabButtons.forEach(btn => {
           btn.classList.toggle("active", btn.dataset.tab === tab);
         });
-        // bottom nav
         navItems.forEach(item => {
           item.classList.toggle("active", item.dataset.tab === tab);
         });
-        // sections
         Object.keys(sections).forEach(key => {
+          if (!sections[key]) return;
           sections[key].style.display = key === tab ? "block" : "none";
         });
       }
@@ -881,8 +909,19 @@
       navItems.forEach(item => {
         item.addEventListener("click", () => activate(item.dataset.tab));
       });
+
+      activate("flow");
     }
 
+    // Guardar en Firestore
+    async function saveTransactionFirebase(tx) {
+      await addDoc(collection(db, "transactions"), {
+        ...tx,
+        createdAt: new Date()
+      });
+    }
+
+    // Modal de nuevo movimiento
     function setupModal() {
       const fab = document.getElementById("fabBtn");
       const backdrop = document.getElementById("modalBackdrop");
@@ -894,54 +933,62 @@
       let currentType = "income";
 
       function openModal() {
+        if (!backdrop) return;
         backdrop.style.display = "flex";
       }
 
       function closeModal() {
+        if (!backdrop || !form) return;
         backdrop.style.display = "none";
         form.reset();
         currentType = "income";
-        typeIncome.classList.add("active-income");
-        typeExpense.classList.remove("active-expense");
+        typeIncome?.classList.add("active-income");
+        typeExpense?.classList.remove("active-expense");
       }
 
-      fab.addEventListener("click", openModal);
-      close.addEventListener("click", closeModal);
-      backdrop.addEventListener("click", (e) => {
+      fab?.addEventListener("click", openModal);
+      close?.addEventListener("click", closeModal);
+      backdrop?.addEventListener("click", (e) => {
         if (e.target === backdrop) closeModal();
       });
 
-      typeIncome.addEventListener("click", () => {
+      typeIncome?.addEventListener("click", () => {
         currentType = "income";
         typeIncome.classList.add("active-income");
         typeExpense.classList.remove("active-expense");
       });
 
-      typeExpense.addEventListener("click", () => {
+      typeExpense?.addEventListener("click", () => {
         currentType = "expense";
         typeExpense.classList.add("active-expense");
         typeIncome.classList.remove("active-income");
       });
 
-      form.addEventListener("submit", (e) => {
+      form?.addEventListener("submit", async (e) => {
         e.preventDefault();
+
         const amount = parseFloat(document.getElementById("amountInput").value || "0");
         const category = document.getElementById("categorySelect").value;
-        const date = document.getElementById("dateInput").value;
+        const date = document.getElementById("dateInput").value || new Date().toISOString().slice(0,10);
         const note = document.getElementById("noteInput").value;
 
-        // Por ahora, sólo mostramos en consola.
-        console.log("Nuevo movimiento:", {
+        const tx = {
           amount,
           type: currentType,
           category,
           date,
           note
-        });
+        };
 
-        alert("Simulamos guardar el movimiento en tu Flow 😉\nDespués esto lo enganchamos a LocalStorage o backend.");
-
-        closeModal();
+        try {
+          await saveTransactionFirebase(tx);
+          console.log("Guardado en Firebase:", tx);
+          alert("Movimiento guardado en Firebase ✅");
+          closeModal();
+        } catch (err) {
+          console.error(err);
+          alert("Error guardando en Firebase 😢\nRevisá consola.");
+        }
       });
     }
 
@@ -957,3 +1004,5 @@
   </script>
 </body>
 </html>
+
+
