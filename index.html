@@ -1,1008 +1,1324 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Flowi · Finanzas Personales</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Presupuesto Lubricentro - Proyecto (Win98)</title>
   <style>
-    :root {
-      --bg1: #eef2ff;
-      --bg2: #e0fbea;
-      --accent: #22c55e;
-      --accent-soft: rgba(34, 197, 94, 0.15);
-      --danger: #ef4444;
-      --text-main: #020617;
-      --text-muted: #6b7280;
-      --card-bg: rgba(255, 255, 255, 0.8);
-      --radius-lg: 18px;
-      --shadow-soft: 0 18px 40px rgba(15, 23, 42, 0.15);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-    }
-
-    body {
-      min-height: 100vh;
-      background: radial-gradient(circle at top left, var(--bg1), var(--bg2));
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-    }
-
-    .app {
-      width: 100%;
-      max-width: 480px;
-      min-height: 100vh;
-      padding: 12px 12px 72px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    /* Header */
-    .app-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 4px 4px 0;
-    }
-
-    .app-title {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .app-title span.small {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .app-title h1 {
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    .chip-month {
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.7);
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
-      font-size: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .chip-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: var(--accent);
-    }
-
-    /* Card circular resumen */
-    .card-ring {
-      margin-top: 4px;
-      background: var(--card-bg);
-      border-radius: 24px;
-      padding: 14px 14px 12px;
-      box-shadow: var(--shadow-soft);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .ring-layout {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .ring {
-      width: 92px;
-      height: 92px;
-      border-radius: 999px;
-      background: conic-gradient(
-        from -90deg,
-        var(--accent) 0%,
-        var(--accent) 46%,
-        rgba(148, 163, 184, 0.5) 46%,
-        rgba(148, 163, 184, 0.5) 100%
-      );
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .ring-inner {
-      width: 64px;
-      height: 64px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.9);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      font-size: 11px;
-    }
-
-    .ring-inner strong {
-      font-size: 16px;
-    }
-
-    .ring-badge {
-      position: absolute;
-      bottom: 4px;
-      right: -2px;
-      background: var(--accent-soft);
-      color: #15803d;
-      font-size: 10px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .ring-badge span {
-      font-size: 13px;
-    }
-
-    .ring-text {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .ring-text .label {
-      font-size: 11px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    .ring-text .balance {
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .ring-text .sub {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .ring-progress {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 8px;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .ring-progress-bar {
-      position: relative;
-      margin-top: 6px;
-      height: 7px;
-      border-radius: 999px;
-      background: rgba(148, 163, 184, 0.25);
-      overflow: hidden;
-    }
-
-    .ring-progress-fill {
-      position: absolute;
-      inset: 0;
-      width: 46%;
-      background: linear-gradient(90deg, #22c55e, #4ade80);
-    }
-
-    /* Botón flotante */
-    .fab {
-      position: fixed;
-      bottom: 82px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 64px;
-      height: 64px;
-      border-radius: 999px;
-      background: radial-gradient(circle at top left, #4ade80, #22c55e);
-      box-shadow: 0 18px 40px rgba(22, 163, 74, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 30px;
-      border: none;
-      cursor: pointer;
-      z-index: 15;
-    }
-
-    /* Tabs top */
-    .tabs {
-      display: flex;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.7);
-      border-radius: 999px;
-      padding: 4px;
-      margin-top: 4px;
-    }
-
-    .tab-pill {
-      flex: 1;
-      border-radius: 999px;
-      border: none;
-      background: transparent;
-      padding: 6px 0;
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 500;
-      cursor: pointer;
-    }
-
-    .tab-pill.active {
-      background: #0f172a;
-      color: white;
-    }
-
-    /* Contenido scrollable */
-    .content {
-      flex: 1;
-      margin-top: 6px;
-      overflow-y: auto;
-      padding-bottom: 12px;
-    }
-
-    .section-title {
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 4px;
-      margin-top: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: #0f172a;
-    }
-
-    .section-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    /* Flow: timeline de días */
-    .day-card {
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      padding: 8px 10px;
-      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
-      margin-bottom: 8px;
-    }
-
-    .day-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .day-header strong {
-      font-size: 12px;
-      color: #0f172a;
-    }
-
-    .chips-row {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-      margin-bottom: 4px;
-    }
-
-    .chip-mini {
-      padding: 3px 8px;
-      border-radius: 999px;
-      font-size: 10px;
-      background: rgba(148, 163, 184, 0.15);
-      color: #0f172a;
-    }
-
-    .chip-mini.income {
-      background: rgba(34, 197, 94, 0.18);
-      color: #166534;
-    }
-
-    .chip-mini.expense {
-      background: rgba(239, 68, 68, 0.14);
-      color: #991b1b;
-    }
-
-    .day-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 12px;
-      margin-top: 2px;
-    }
-
-    .day-footer span.balance {
-      font-weight: 600;
-    }
-
-    /* Burbujas */
-    .bubbles-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .bubble {
-      width: 84px;
-      height: 84px;
-      border-radius: 999px;
-      background: radial-gradient(circle at top, rgba(255, 255, 255, 0.95), rgba(148, 163, 184, 0.15));
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      font-size: 11px;
-      position: relative;
-    }
-
-    .bubble strong {
-      font-size: 12px;
-    }
-
-    .bubble-amount {
-      font-weight: 700;
-      font-size: 13px;
-    }
-
-    .bubble-tag {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      font-size: 9px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      color: #15803d;
-    }
-
-    /* Metas */
-    .goal-card {
-      background: var(--card-bg);
-      border-radius: var(--radius-lg);
-      padding: 10px 10px 8px;
-      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
-      margin-bottom: 8px;
-      font-size: 12px;
-    }
-
-    .goal-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-
-    .goal-name {
-      font-weight: 600;
-    }
-
-    .goal-tag {
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: #0f172a;
-      color: white;
-    }
-
-    .goal-progress {
-      margin-top: 6px;
-    }
-
-    .goal-bar {
-      margin-top: 4px;
-      height: 7px;
-      border-radius: 999px;
-      background: rgba(148, 163, 184, 0.25);
-      overflow: hidden;
-    }
-
-    .goal-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #22c55e, #4ade80);
-      width: 62%;
-    }
-
-    /* Bottom nav */
-    .bottom-nav {
-      position: fixed;
-      bottom: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 480px;
-      padding: 6px 12px;
-      z-index: 10;
-    }
-
-    .bottom-nav-inner {
-      background: rgba(15, 23, 42, 0.96);
-      border-radius: 999px;
-      padding: 6px 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: rgba(148, 163, 184, 0.95);
-      font-size: 11px;
-    }
-
-    .nav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      cursor: pointer;
-      padding: 4px 0;
-      border-radius: 999px;
-    }
-
-    .nav-item.active {
-      color: white;
-      background: rgba(148, 163, 184, 0.22);
-    }
-
-    .nav-icon {
-      font-size: 18px;
-      line-height: 1;
-    }
-
-    /* Simple modal */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.35);
-      display: none;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 20;
-    }
-
-    .modal {
-      width: 100%;
-      max-width: 480px;
-      background: #f9fafb;
-      border-radius: 18px 18px 0 0;
-      padding: 12px 14px 18px;
-      box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.35);
-      animation: slideUp 200ms ease-out;
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(40px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .modal-header h2 {
-      font-size: 15px;
-    }
-
-    .modal-close {
-      border: none;
-      background: transparent;
-      font-size: 18px;
-      cursor: pointer;
-      color: var(--text-muted);
-    }
-
-    .modal-form {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      font-size: 12px;
-    }
-
-    .field-label {
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .field-input,
-    .field-select {
-      width: 100%;
-      padding: 8px 9px;
-      border-radius: 10px;
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      background: white;
-      font-size: 13px;
-    }
-
-    .field-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-primary {
-      margin-top: 4px;
-      width: 100%;
-      border-radius: 999px;
-      padding: 9px 0;
-      border: none;
-      background: linear-gradient(90deg, #22c55e, #16a34a);
-      color: white;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    .badge-type {
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: rgba(148, 163, 184, 0.18);
-      cursor: pointer;
-    }
-
-    .badge-type.active-income {
-      background: rgba(34, 197, 94, 0.17);
-      color: #166534;
-    }
-
-    .badge-type.active-expense {
-      background: rgba(239, 68, 68, 0.17);
-      color: #991b1b;
-    }
-
-    @media (min-width: 768px) {
-      .app {
-        margin-top: 10px;
-        margin-bottom: 10px;
-        border-radius: 24px;
-      }
+    :root{
+      --bg: #c0c0c0;
+      --panel: #c0c0c0;
+      --text: #000;
+      --blue: #000080;
+      --white: #fff;
+      --shadow1: #808080;
+      --shadow2: #404040;
+      --hi: #dfdfdf;
+      --ok: #0a7a0a;
+      --warn: #a36b00;
+      --bad: #a00000;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+    }
+
+    /* Win98-ish bevel helpers */
+    .bevel{
+      background: var(--panel);
+      border: 2px solid var(--white);
+      border-right-color: var(--shadow1);
+      border-bottom-color: var(--shadow1);
+      box-shadow: inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--shadow2);
+    }
+    .bevel-in{
+      background: var(--white);
+      border: 2px solid var(--shadow1);
+      border-right-color: var(--white);
+      border-bottom-color: var(--white);
+      box-shadow: inset 1px 1px 0 var(--shadow2), inset -1px -1px 0 var(--hi);
+    }
+
+    .app{
+      min-height: 100%;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding:10px;
+    }
+
+    .titlebar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:6px 8px;
+      background: linear-gradient(90deg, var(--blue), #0019a8);
+      color: var(--white);
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .titlebar small{ opacity:.9; font-weight:600; }
+
+    .window{
+      overflow:hidden;
+    }
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      padding:10px;
+      align-items:flex-end;
+    }
+
+    label{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      font-size:12px;
+    }
+    input, select, textarea{
+      font-family: var(--sans);
+      font-size:14px;
+      padding:6px 8px;
+      border-radius:0;
+      outline:none;
+      min-height:34px;
+    }
+    input[type="number"]{ font-family: var(--mono); }
+    textarea{ min-height:70px; resize:vertical; }
+
+    button{
+      cursor:pointer;
+      padding:7px 10px;
+      border-radius:0;
+      font-weight:700;
+      min-height:34px;
+      background: var(--panel);
+      border: 2px solid var(--white);
+      border-right-color: var(--shadow1);
+      border-bottom-color: var(--shadow1);
+      box-shadow: inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--shadow2);
+    }
+    button:active{
+      border: 2px solid var(--shadow1);
+      border-right-color: var(--white);
+      border-bottom-color: var(--white);
+      box-shadow: inset 1px 1px 0 var(--shadow2), inset -1px -1px 0 var(--hi);
+    }
+    button.secondary{ font-weight:600; }
+    button.danger{ color: #000; }
+    .btnrow{ display:flex; gap:8px; flex-wrap:wrap; }
+
+    .content{
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:10px;
+      min-height: 60vh;
+    }
+
+    @media (max-width: 980px){
+      .content{ grid-template-columns: 1fr; }
+    }
+
+    .pane{
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .section-title{
+      font-family: var(--mono);
+      font-size:12px;
+      padding:6px 8px;
+      background: var(--panel);
+      border: 1px solid var(--shadow1);
+      box-shadow: inset 1px 1px 0 var(--hi), inset -1px -1px 0 var(--shadow2);
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap:10px;
+      padding:10px;
+    }
+    @media (max-width: 980px){
+      .cards{ grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+    }
+    @media (max-width: 480px){
+      .cards{ grid-template-columns: 1fr; }
+    }
+    .card{
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .card .k{ font-size:12px; font-family: var(--mono); opacity:.9; }
+    .card .v{ font-size:18px; font-weight:900; font-family: var(--mono); }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-family: var(--mono);
+      font-size:12px;
+      padding:4px 6px;
+      border: 1px solid var(--shadow1);
+      background: #efefef;
+      width: fit-content;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:flex-end;
+    }
+
+    .table{
+      width:100%;
+      border-collapse:collapse;
+      font-family: var(--mono);
+      font-size:12px;
+      background: var(--white);
+    }
+    .table th, .table td{
+      border:1px solid #9a9a9a;
+      padding:6px 6px;
+      vertical-align:top;
+    }
+    .table th{
+      background:#e8e8e8;
+      text-align:left;
+    }
+    .table td.actions{
+      white-space:nowrap;
+    }
+    .table .muted{ opacity:.8; }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 980px){
+      .split{ grid-template-columns: 1fr; }
+    }
+
+    .bars{
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .bar-item{
+      display:grid;
+      grid-template-columns: 210px 1fr;
+      gap:10px;
+      align-items:center;
+    }
+    @media (max-width: 520px){
+      .bar-item{ grid-template-columns: 1fr; }
+    }
+    .bar-name{
+      font-family: var(--mono);
+      font-size:12px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .bar-wrap{
+      height:22px;
+      position:relative;
+      background:#f3f3f3;
+      border: 1px solid #9a9a9a;
+      overflow:hidden;
+    }
+    .bar-budget{
+      position:absolute; left:0; top:0; bottom:0;
+      background:#c9d3ff;
+      width:0%;
+    }
+    .bar-spent{
+      position:absolute; left:0; top:0; bottom:0;
+      background:#7aa6ff;
+      width:0%;
+      mix-blend-mode:multiply;
+    }
+    .bar-over{
+      position:absolute; top:0; bottom:0;
+      background: rgba(160,0,0,.25);
+      display:none;
+    }
+    .bar-label{
+      position:absolute; inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family: var(--mono);
+      font-size:12px;
+      font-weight:800;
+      text-shadow: 0 1px 0 rgba(255,255,255,.6);
+      pointer-events:none;
+    }
+
+    .footer{
+      padding:10px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      font-family: var(--mono);
+      font-size:12px;
+      opacity:.9;
+    }
+
+    .hint{
+      font-family: var(--mono);
+      font-size:12px;
+      opacity:.85;
+      line-height:1.35;
+    }
+
+    .divider{ height:1px; background:#9a9a9a; }
+
+    .modal-backdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.25);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:12px;
+      z-index:9999;
+    }
+    .modal{
+      width:min(820px, 100%);
+      max-height: 92vh;
+      overflow:auto;
+    }
+    .modal .titlebar{ position:sticky; top:0; }
+    .modal-body{ padding:10px; display:flex; flex-direction:column; gap:10px; }
+
+    .pill{
+      padding:2px 6px;
+      border:1px solid #777;
+      background:#efefef;
+      font-family: var(--mono);
+      font-size:12px;
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <header class="app-header">
-      <div class="app-title">
-        <span class="small">Buen día, Vallozzi 👋</span>
-        <h1>Tu Flow de hoy</h1>
+    <div class="window bevel">
+      <div class="titlebar">
+        <div>Presupuesto Lubricentro - Proyecto <small>(Win98 vibes)</small></div>
+        <div class="pill" id="pillSaved">● guardado</div>
       </div>
-      <div class="chip-month">
-        <div class="chip-dot"></div>
-        <span id="monthLabel">Noviembre 2025</span>
-      </div>
-    </header>
 
-    <section class="card-ring">
-      <div class="ring-layout">
-        <div class="ring">
-          <div class="ring-inner">
-            <span style="color: var(--text-muted);">Balance</span>
-            <strong id="balanceLabel">$ 152.300</strong>
-            <span style="color: #16a34a;">+ $ 12.400</span>
-          </div>
-          <div class="ring-badge">
-            <span>⬆</span>
-            <span>47% del presupuesto</span>
-          </div>
-        </div>
-        <div class="ring-text">
-          <span class="label">Resumen del mes</span>
-          <div class="sub">
-            <div><strong>Ingresos:</strong> $ 240.000</div>
-            <div><strong>Gastos:</strong> $ 87.700</div>
-          </div>
-          <div class="ring-progress">
-            <span>Presupuesto usado</span>
-            <span id="budgetPercent">46%</span>
-          </div>
-          <div class="ring-progress-bar">
-            <div class="ring-progress-fill"></div>
-          </div>
-        </div>
-      </div>
-    </section>
+      <div class="toolbar">
+        <label>
+          Nombre del proyecto
+          <input class="bevel-in" id="projectName" placeholder="Ej: Lubricentro - Armado 2026" />
+        </label>
 
-    <section class="tabs">
-      <button class="tab-pill active" data-tab="flow">Flow</button>
-      <button class="tab-pill" data-tab="bubbles">Burbujas</button>
-      <button class="tab-pill" data-tab="goals">Metas</button>
-    </section>
+        <label>
+          Valor del dólar (ARS/USD)
+          <input class="bevel-in" id="usdRate" type="number" step="0.01" min="0" placeholder="Ej: 1200" />
+        </label>
 
-    <main class="content">
-      <!-- FLOW -->
-      <section id="tab-flow">
-        <div class="section-title">
-          <span>Últimos días</span>
-          <span class="section-sub">Vista rápida de tu cashflow</span>
-        </div>
-
-        <div id="daysContainer">
-          <!-- Se rellena por JS -->
-        </div>
-      </section>
-
-      <!-- BURBUJAS -->
-      <section id="tab-bubbles" style="display: none;">
-        <div class="section-title">
-          <span>Tus categorías</span>
-          <span class="section-sub">Burbujas según cuánto gastás</span>
-        </div>
-        <div class="bubbles-wrap" id="bubblesContainer">
-          <!-- Se rellena por JS -->
-        </div>
-      </section>
-
-      <!-- METAS -->
-      <section id="tab-goals" style="display: none;">
-        <div class="section-title">
-          <span>Metas activas</span>
-          <span class="section-sub">Lo que tu yo del futuro te va a agradecer</span>
-        </div>
-
-        <div id="goalsContainer">
-          <!-- Se rellena por JS -->
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <!-- Botón flotante -->
-  <button class="fab" id="fabBtn">+</button>
-
-  <!-- Bottom nav -->
-  <nav class="bottom-nav">
-    <div class="bottom-nav-inner">
-      <div class="nav-item active" data-tab="flow">
-        <div class="nav-icon">🌀</div>
-        <span>Flow</span>
-      </div>
-      <div class="nav-item" data-tab="bubbles">
-        <div class="nav-icon">🫧</div>
-        <span>Burbujas</span>
-      </div>
-      <div class="nav-item" data-tab="goals">
-        <div class="nav-icon">⭐</div>
-        <span>Metas</span>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Modal alta rápida -->
-  <div class="modal-backdrop" id="modalBackdrop">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>Nuevo movimiento</h2>
-        <button class="modal-close" id="modalClose">&times;</button>
-      </div>
-      <form class="modal-form" id="txForm">
-        <div class="field-row">
-          <div style="flex: 1;">
-            <div class="field-label">Monto</div>
-            <input type="number" step="0.01" class="field-input" id="amountInput" placeholder="Ej: 4500" required>
-          </div>
-          <div>
-            <div class="field-label">Tipo</div>
-            <div style="display:flex; gap:4px; margin-top:4px;">
-              <div id="typeIncome" class="badge-type active-income" data-type="income">Ingreso</div>
-              <div id="typeExpense" class="badge-type" data-type="expense">Gasto</div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div class="field-label">Categoría</div>
-          <select class="field-select" id="categorySelect">
-            <option value="Comida">Comida</option>
-            <option value="Transporte">Transporte</option>
-            <option value="Hogar">Hogar</option>
-            <option value="Ocio">Ocio</option>
-            <option value="Otros">Otros</option>
+        <label>
+          Moneda de vista
+          <select class="bevel-in" id="viewCurrency">
+            <option value="ARS">ARS</option>
+            <option value="USD">USD</option>
+            <option value="BOTH">Ambas</option>
           </select>
+        </label>
+
+        <div class="btnrow" style="margin-left:auto;">
+          <button id="btnExport">Exportar JSON</button>
+          <button id="btnImport" class="secondary">Importar JSON</button>
+          <button id="btnReset" class="secondary">Reset (borrar todo)</button>
         </div>
 
-        <div class="field-row">
-          <div style="flex: 1;">
-            <div class="field-label">Fecha</div>
-            <input type="date" class="field-input" id="dateInput">
-          </div>
-          <div style="flex: 1;">
-            <div class="field-label">Nota</div>
-            <input type="text" class="field-input" id="noteInput" placeholder="Ej: Cena con amigos">
-          </div>
+        <div class="hint" style="width:100%;">
+          Tip: en gastos podés cargar <b>ARS</b> o directamente <b>USD</b>. La app convierte usando tu dólar actual. Todo queda guardado en este navegador (offline).
+        </div>
+      </div>
+    </div>
+
+    <div class="window bevel">
+      <div class="titlebar">
+        <div>Dashboard</div>
+        <small id="dashSub">—</small>
+      </div>
+
+      <div class="cards">
+        <div class="card bevel">
+          <div class="k">Presupuesto total</div>
+          <div class="v" id="kpiBudget">—</div>
+          <div class="chip" id="kpiBudget2" style="display:none;"></div>
+        </div>
+        <div class="card bevel">
+          <div class="k">Gasto real total</div>
+          <div class="v" id="kpiSpent">—</div>
+          <div class="chip" id="kpiSpent2" style="display:none;"></div>
+        </div>
+        <div class="card bevel">
+          <div class="k">Diferencia</div>
+          <div class="v" id="kpiDiff">—</div>
+          <div class="chip" id="kpiDiff2" style="display:none;"></div>
+        </div>
+        <div class="card bevel">
+          <div class="k">% ejecución</div>
+          <div class="v" id="kpiPct">—</div>
+          <div class="chip" id="kpiStatus">—</div>
+        </div>
+      </div>
+
+      <div class="bars" id="bars"></div>
+    </div>
+
+    <div class="content">
+      <!-- Left: subprojects -->
+      <div class="pane bevel">
+        <div class="section-title">SUBPROYECTOS</div>
+
+        <div class="row">
+          <label style="flex:1; min-width: 210px;">
+            Nombre subproyecto
+            <input class="bevel-in" id="spName" placeholder="Ej: Obra civil" />
+          </label>
+          <label style="width: 140px;">
+            Presupuesto (ARS)
+            <input class="bevel-in" id="spBudgetArs" type="number" step="0.01" min="0" placeholder="0" />
+          </label>
+          <button id="btnAddSub">Crear</button>
         </div>
 
-        <button type="submit" class="btn-primary">Guardar en tu Flow</button>
-      </form>
+        <div class="divider"></div>
+
+        <div class="hint">
+          Elegí un subproyecto para cargar gastos. Si borrás un subproyecto, se van también sus gastos (no hay papelera, es Win98).
+        </div>
+
+        <div class="list" id="subList"></div>
+      </div>
+
+      <!-- Right: expenses -->
+      <div class="pane bevel">
+        <div class="section-title">GASTOS DEL SUBPROYECTO SELECCIONADO</div>
+
+        <div class="hint" id="selectedHint">Seleccioná un subproyecto para ver/cargar gastos.</div>
+
+        <div id="expensePanel" style="display:none; gap:10px; flex-direction:column;">
+          <div class="split">
+            <div class="bevel" style="padding:10px; display:flex; flex-direction:column; gap:10px;">
+              <div class="row" style="align-items:flex-end;">
+                <label style="flex:1; min-width: 180px;">
+                  Concepto
+                  <input class="bevel-in" id="exConcept" placeholder="Ej: Pintura epoxi" />
+                </label>
+                <label style="width: 160px;">
+                  Fecha
+                  <input class="bevel-in" id="exDate" type="date" />
+                </label>
+              </div>
+
+              <div class="row" style="align-items:flex-end;">
+                <label style="width: 180px;">
+                  Monto (ARS)
+                  <input class="bevel-in" id="exArs" type="number" step="0.01" min="0" placeholder="0" />
+                </label>
+
+                <label style="width: 180px;">
+                  Monto (USD)
+                  <input class="bevel-in" id="exUsd" type="number" step="0.01" min="0" placeholder="0" />
+                </label>
+
+                <button id="btnAddExpense" style="margin-left:auto;">Agregar gasto</button>
+              </div>
+
+              <label>
+                Notas (opcional)
+                <textarea class="bevel-in" id="exNotes" placeholder="Marca / proveedor / detalle, lo que te sirva…"></textarea>
+              </label>
+
+              <div class="hint">
+                Si cargás ARS, se calcula USD. Si cargás USD, se calcula ARS. Si cargás ambos, se respeta lo que pusiste (y queda como “dato manual”).
+              </div>
+            </div>
+
+            <div class="bevel" style="padding:10px; display:flex; flex-direction:column; gap:10px;">
+              <div class="row">
+                <label style="flex:1;">
+                  Buscar
+                  <input class="bevel-in" id="exSearch" placeholder="Buscar por concepto o notas…" />
+                </label>
+                <label style="width: 160px;">
+                  Orden
+                  <select class="bevel-in" id="exSort">
+                    <option value="date_desc">Fecha (nuevo→viejo)</option>
+                    <option value="date_asc">Fecha (viejo→nuevo)</option>
+                    <option value="amt_desc">Monto ARS (mayor→menor)</option>
+                    <option value="amt_asc">Monto ARS (menor→mayor)</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="hint" id="subKpis">—</div>
+
+              <div class="btnrow">
+                <button id="btnEditSub" class="secondary">Editar subproyecto</button>
+                <button id="btnDeleteSub" class="secondary">Borrar subproyecto</button>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="hint">
+                Próximo nivel: cuando tengas data, esto te canta dónde se te va la guita antes de que te enteres en la cuenta bancaria 😅
+              </div>
+            </div>
+          </div>
+
+          <div class="bevel" style="padding:10px;">
+            <table class="table" id="exTable">
+              <thead>
+                <tr>
+                  <th style="width:100px;">Fecha</th>
+                  <th>Concepto</th>
+                  <th style="width:120px;">ARS</th>
+                  <th style="width:120px;">USD</th>
+                  <th>Notas</th>
+                  <th style="width:150px;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="window bevel">
+      <div class="footer">
+        <div>Proyecto guardado en <b>LocalStorage</b> · sin internet · sin Excel · sin drama</div>
+        <div id="footerInfo">—</div>
+      </div>
     </div>
   </div>
 
-  <!-- SCRIPT: Flowi + Firebase -->
-  <script type="module">
-    // Firebase SDK (v12.6.0)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      addDoc
-    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+  <!-- Modal: Import -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal bevel">
+      <div class="titlebar">
+        <div>Importar JSON</div>
+        <button id="btnCloseModal" class="secondary">Cerrar</button>
+      </div>
+      <div class="modal-body">
+        <div class="hint">
+          Pegá el JSON exportado acá. Si es válido, reemplaza TODO el proyecto actual.
+        </div>
+        <textarea class="bevel-in" id="importText" placeholder="{ ... }"></textarea>
+        <div class="btnrow">
+          <button id="btnDoImport">Importar y reemplazar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    // Config de tu proyecto
-    const firebaseConfig = {
-      apiKey: "AIzaSyClDJTfD7tMClhUH9unWW_x93FYAIDcM2I",
-      authDomain: "finanzas-4-0.firebaseapp.com",
-      projectId: "finanzas-4-0",
-      storageBucket: "finanzas-4-0.firebasestorage.app",
-      messagingSenderId: "740934543720",
-      appId: "1:740934543720:web:b51c2d488c048a6b0fcedd"
+<script>
+(() => {
+  "use strict";
+
+  const STORAGE_KEY = "lubricentro_budget_app_v1";
+  const DEFAULTS = {
+    app_version: 1,
+    projectName: "Proyecto Lubricentro",
+    usdRate: 1200,
+    viewCurrency: "ARS", // ARS | USD | BOTH
+    subprojects: [], // {id, name, budgetArs}
+    expenses: [] // {id, subId, date, concept, ars, usd, notes, createdAt}
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+
+  const state = load();
+
+  // Elements
+  const elProjectName = $("projectName");
+  const elUsdRate = $("usdRate");
+  const elViewCurrency = $("viewCurrency");
+  const elSubList = $("subList");
+  const elSpName = $("spName");
+  const elSpBudgetArs = $("spBudgetArs");
+  const elPillSaved = $("pillSaved");
+
+  const elKpiBudget = $("kpiBudget");
+  const elKpiSpent = $("kpiSpent");
+  const elKpiDiff = $("kpiDiff");
+  const elKpiPct = $("kpiPct");
+  const elKpiStatus = $("kpiStatus");
+
+  const elKpiBudget2 = $("kpiBudget2");
+  const elKpiSpent2 = $("kpiSpent2");
+  const elKpiDiff2 = $("kpiDiff2");
+
+  const elBars = $("bars");
+  const elDashSub = $("dashSub");
+  const elFooterInfo = $("footerInfo");
+
+  const elSelectedHint = $("selectedHint");
+  const elExpensePanel = $("expensePanel");
+
+  const elExConcept = $("exConcept");
+  const elExDate = $("exDate");
+  const elExArs = $("exArs");
+  const elExUsd = $("exUsd");
+  const elExNotes = $("exNotes");
+  const elExSearch = $("exSearch");
+  const elExSort = $("exSort");
+  const elExTableBody = $("exTable").querySelector("tbody");
+  const elSubKpis = $("subKpis");
+
+  const elModalBackdrop = $("modalBackdrop");
+  const elImportText = $("importText");
+
+  let selectedSubId = null;
+  let dirtyTimer = null;
+
+  // Init inputs
+  elProjectName.value = state.projectName;
+  elUsdRate.value = state.usdRate;
+  elViewCurrency.value = state.viewCurrency;
+
+  // Default date = today
+  elExDate.value = isoDate(new Date());
+
+  // Events: header controls
+  elProjectName.addEventListener("input", () => {
+    state.projectName = elProjectName.value.trim() || "Proyecto Lubricentro";
+    markDirtyAndSave();
+    renderAll();
+  });
+
+  elUsdRate.addEventListener("input", () => {
+    const v = safeNum(elUsdRate.value, 0);
+    state.usdRate = v > 0 ? v : 0;
+    markDirtyAndSave();
+    // Also re-render conversions
+    renderAll();
+  });
+
+  elViewCurrency.addEventListener("change", () => {
+    state.viewCurrency = elViewCurrency.value;
+    markDirtyAndSave();
+    renderAll();
+  });
+
+  // Subprojects: create
+  $("btnAddSub").addEventListener("click", () => {
+    const name = elSpName.value.trim();
+    const budgetArs = safeNum(elSpBudgetArs.value, 0);
+
+    if (!name) return toast("Poné un nombre de subproyecto, che.");
+    if (budgetArs < 0) return toast("El presupuesto no puede ser negativo.");
+
+    const sp = { id: uid(), name, budgetArs };
+    state.subprojects.push(sp);
+    elSpName.value = "";
+    elSpBudgetArs.value = "";
+    selectedSubId = sp.id;
+
+    markDirtyAndSave();
+    renderAll();
+  });
+
+  // Expenses: auto convert
+  elExArs.addEventListener("input", () => {
+    const ars = safeNum(elExArs.value, 0);
+    const rate = safeNum(state.usdRate, 0);
+    if (rate > 0 && ars > 0) {
+      // only auto-fill USD if USD is empty or 0-ish
+      if (!elExUsd.value || safeNum(elExUsd.value, 0) === 0) {
+        elExUsd.value = (ars / rate).toFixed(2);
+      }
+    }
+  });
+
+  elExUsd.addEventListener("input", () => {
+    const usd = safeNum(elExUsd.value, 0);
+    const rate = safeNum(state.usdRate, 0);
+    if (rate > 0 && usd > 0) {
+      if (!elExArs.value || safeNum(elExArs.value, 0) === 0) {
+        elExArs.value = (usd * rate).toFixed(2);
+      }
+    }
+  });
+
+  // Expenses: add
+  $("btnAddExpense").addEventListener("click", () => {
+    if (!selectedSubId) return;
+
+    const concept = elExConcept.value.trim();
+    const date = elExDate.value || isoDate(new Date());
+    const ars = safeNum(elExArs.value, 0);
+    const usd = safeNum(elExUsd.value, 0);
+    const notes = elExNotes.value.trim();
+
+    if (!concept) return toast("Falta el concepto del gasto.");
+    if (ars <= 0 && usd <= 0) return toast("Poné un monto en ARS o USD.");
+
+    // Normalize: if one currency missing, compute it (if rate available)
+    const rate = safeNum(state.usdRate, 0);
+    let nArs = ars, nUsd = usd;
+
+    if (rate > 0) {
+      if (nArs > 0 && nUsd <= 0) nUsd = nArs / rate;
+      if (nUsd > 0 && nArs <= 0) nArs = nUsd * rate;
+    }
+
+    const ex = {
+      id: uid(),
+      subId: selectedSubId,
+      date,
+      concept,
+      ars: round2(nArs),
+      usd: round2(nUsd),
+      notes,
+      createdAt: Date.now()
     };
+    state.expenses.push(ex);
 
-    // Inicializar Firebase y Firestore
-    const appFB = initializeApp(firebaseConfig);
-    const db = getFirestore(appFB);
+    // Clear inputs
+    elExConcept.value = "";
+    elExArs.value = "";
+    elExUsd.value = "";
+    elExNotes.value = "";
+    elExDate.value = isoDate(new Date());
 
-    // Datos fake por ahora (después los reemplazamos con Firebase)
-    const sampleDays = [
-      {
-        date: "Hoy",
-        weekday: "Lunes",
-        income: 0,
-        expense: 6800,
-        balance: 152300,
-        tags: ["Comida", "Apps", "Delivery"]
-      },
-      {
-        date: "Ayer",
-        weekday: "Domingo",
-        income: 22000,
-        expense: 9500,
-        balance: 159100,
-        tags: ["Sueldo", "Combustible"]
-      },
-      {
-        date: "Hace 2 días",
-        weekday: "Sábado",
-        income: 0,
-        expense: 12400,
-        balance: 146600,
-        tags: ["Salida", "Ocio"]
-      }
-    ];
+    markDirtyAndSave();
+    renderAll();
+  });
 
-    const sampleBubbles = [
-      { name: "Comida", amount: 32800, tag: "🔥 alta" },
-      { name: "Transporte", amount: 11200, tag: "ok" },
-      { name: "Hogar", amount: 25400, tag: "estable" },
-      { name: "Ocio", amount: 18500, tag: "controlar" },
-      { name: "Otros", amount: 5200, tag: "-" }
-    ];
+  // Search/sort
+  elExSearch.addEventListener("input", () => renderExpensesTable());
+  elExSort.addEventListener("change", () => renderExpensesTable());
 
-    const sampleGoals = [
-      { name: "Colchón de emergencias", saved: 62000, target: 100000 },
-      { name: "Viaje finde largo", saved: 18000, target: 40000 }
-    ];
+  // Edit / delete subproject
+  $("btnEditSub").addEventListener("click", () => {
+    const sp = getSelectedSub();
+    if (!sp) return;
 
-    function formatCurrency(value) {
-      return "$ " + value.toLocaleString("es-AR");
+    const newName = prompt("Nuevo nombre del subproyecto:", sp.name);
+    if (newName === null) return;
+
+    const trimmed = newName.trim();
+    if (!trimmed) return toast("Nombre inválido.");
+
+    const newBudget = prompt("Nuevo presupuesto ARS:", String(sp.budgetArs ?? 0));
+    if (newBudget === null) {
+      sp.name = trimmed;
+      markDirtyAndSave();
+      renderAll();
+      return;
+    }
+    const nb = safeNum(newBudget, sp.budgetArs ?? 0);
+    if (nb < 0) return toast("Presupuesto inválido.");
+
+    sp.name = trimmed;
+    sp.budgetArs = nb;
+
+    markDirtyAndSave();
+    renderAll();
+  });
+
+  $("btnDeleteSub").addEventListener("click", () => {
+    const sp = getSelectedSub();
+    if (!sp) return;
+
+    const ok = confirm(`Borrar "${sp.name}" y TODOS sus gastos?`);
+    if (!ok) return;
+
+    state.subprojects = state.subprojects.filter(s => s.id !== sp.id);
+    state.expenses = state.expenses.filter(e => e.subId !== sp.id);
+
+    selectedSubId = state.subprojects[0]?.id ?? null;
+
+    markDirtyAndSave();
+    renderAll();
+  });
+
+  // Export / Import / Reset
+  $("btnExport").addEventListener("click", () => {
+    const payload = JSON.stringify(state, null, 2);
+    const blob = new Blob([payload], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = (slug(state.projectName || "proyecto") || "proyecto") + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 500);
+  });
+
+  $("btnImport").addEventListener("click", () => {
+    elImportText.value = "";
+    openModal(true);
+  });
+
+  $("btnCloseModal").addEventListener("click", () => openModal(false));
+  elModalBackdrop.addEventListener("click", (e) => {
+    if (e.target === elModalBackdrop) openModal(false);
+  });
+
+  $("btnDoImport").addEventListener("click", () => {
+    const txt = elImportText.value.trim();
+    if (!txt) return toast("Pegá un JSON primero.");
+
+    try{
+      const obj = JSON.parse(txt);
+      const validated = validateAndNormalize(obj);
+      if (!validated) return;
+
+      const ok = confirm("Esto va a reemplazar TODO el proyecto actual. ¿Seguro?");
+      if (!ok) return;
+
+      Object.assign(state, validated);
+      selectedSubId = state.subprojects[0]?.id ?? null;
+
+      saveNow();
+      openModal(false);
+      renderAll();
+      toast("Importado OK ✅");
+    }catch(err){
+      toast("JSON inválido: " + err.message);
+    }
+  });
+
+  $("btnReset").addEventListener("click", () => {
+    const ok = confirm("¿Borrar TODO el proyecto en este navegador?");
+    if (!ok) return;
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  });
+
+  // First render
+  if (!selectedSubId && state.subprojects.length) selectedSubId = state.subprojects[0].id;
+  renderAll();
+
+  // ---------- Rendering ----------
+
+  function renderAll(){
+    document.title = (state.projectName || "Proyecto") + " - Presupuesto (Win98)";
+    elDashSub.textContent = state.projectName || "—";
+    elFooterInfo.textContent = `Subproyectos: ${state.subprojects.length} · Gastos: ${state.expenses.length} · Dólar: ${fmtMoney(state.usdRate, "ARS")}/USD`;
+
+    renderSubprojectsList();
+    renderDashboard();
+    renderExpensesPanel();
+  }
+
+  function renderSubprojectsList(){
+    elSubList.innerHTML = "";
+
+    if (!state.subprojects.length){
+      const empty = document.createElement("div");
+      empty.className = "bevel";
+      empty.style.padding = "10px";
+      empty.innerHTML = `<div class="hint">No hay subproyectos todavía. Creá el primero arriba y arrancamos 💪</div>`;
+      elSubList.appendChild(empty);
+      selectedSubId = null;
+      return;
     }
 
-    // Render de UI
-    function renderDays() {
-      const container = document.getElementById("daysContainer");
-      if (!container) return;
-      container.innerHTML = "";
-      sampleDays.forEach(day => {
-        const card = document.createElement("article");
-        card.className = "day-card";
-        card.innerHTML = `
-          <div class="day-header">
-            <div>
-              <strong>${day.date}</strong> · <span>${day.weekday}</span>
-            </div>
-            <div>${day.expense > day.income ? "💸" : "💚"}</div>
-          </div>
-          <div class="chips-row">
-            <div class="chip-mini income">+ ${formatCurrency(day.income)}</div>
-            <div class="chip-mini expense">- ${formatCurrency(day.expense)}</div>
-            ${day.tags.map(t => `<div class="chip-mini">${t}</div>`).join("")}
-          </div>
-          <div class="day-footer">
-            <span class="balance">${formatCurrency(day.balance)}</span>
-            <span class="section-sub">${day.expense > day.income ? "Día gastador" : "Día ganador"}</span>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
+    state.subprojects.forEach(sp => {
+      const spentArs = sumExpensesArs(sp.id);
+      const pct = sp.budgetArs > 0 ? (spentArs / sp.budgetArs) * 100 : 0;
+      const status = pct <= 80 ? "ok" : pct <= 100 ? "warn" : "bad";
 
-    function renderBubbles() {
-      const container = document.getElementById("bubblesContainer");
-      if (!container) return;
-      container.innerHTML = "";
-      sampleBubbles.forEach(b => {
-        const div = document.createElement("div");
-        div.className = "bubble";
-        div.innerHTML = `
-          <div class="bubble-tag">${b.tag}</div>
-          <strong>${b.name}</strong>
-          <div class="bubble-amount">${formatCurrency(b.amount)}</div>
-          <span class="section-sub">este mes</span>
-        `;
-        container.appendChild(div);
-      });
-    }
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "bevel";
+      item.style.textAlign = "left";
+      item.style.padding = "10px";
+      item.style.width = "100%";
+      item.style.display = "flex";
+      item.style.flexDirection = "column";
+      item.style.gap = "6px";
 
-    function renderGoals() {
-      const container = document.getElementById("goalsContainer");
-      if (!container) return;
-      container.innerHTML = "";
-      sampleGoals.forEach(g => {
-        const pct = Math.round((g.saved / g.target) * 100);
-        const card = document.createElement("article");
-        card.className = "goal-card";
-        card.innerHTML = `
-          <div class="goal-header">
-            <div>
-              <div class="goal-name">${g.name}</div>
-              <div class="section-sub">Objetivo: ${formatCurrency(g.target)}</div>
-            </div>
-            <div class="goal-tag">${pct}%</div>
-          </div>
-          <div class="goal-progress">
-            <div>${formatCurrency(g.saved)} guardado</div>
-            <div class="goal-bar">
-              <div class="goal-fill" style="width:${Math.min(pct,100)}%"></div>
-            </div>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    // Tabs (arriba y abajo)
-    function setupTabs() {
-      const tabButtons = document.querySelectorAll(".tab-pill");
-      const navItems = document.querySelectorAll(".nav-item");
-      const sections = {
-        flow: document.getElementById("tab-flow"),
-        bubbles: document.getElementById("tab-bubbles"),
-        goals: document.getElementById("tab-goals"),
-      };
-
-      function activate(tab) {
-        tabButtons.forEach(btn => {
-          btn.classList.toggle("active", btn.dataset.tab === tab);
-        });
-        navItems.forEach(item => {
-          item.classList.toggle("active", item.dataset.tab === tab);
-        });
-        Object.keys(sections).forEach(key => {
-          if (!sections[key]) return;
-          sections[key].style.display = key === tab ? "block" : "none";
-        });
-      }
-
-      tabButtons.forEach(btn => {
-        btn.addEventListener("click", () => activate(btn.dataset.tab));
-      });
-      navItems.forEach(item => {
-        item.addEventListener("click", () => activate(item.dataset.tab));
-      });
-
-      activate("flow");
-    }
-
-    // Guardar en Firestore
-    async function saveTransactionFirebase(tx) {
-      await addDoc(collection(db, "transactions"), {
-        ...tx,
-        createdAt: new Date()
-      });
-    }
-
-    // Modal de nuevo movimiento
-    function setupModal() {
-      const fab = document.getElementById("fabBtn");
-      const backdrop = document.getElementById("modalBackdrop");
-      const close = document.getElementById("modalClose");
-      const form = document.getElementById("txForm");
-      const typeIncome = document.getElementById("typeIncome");
-      const typeExpense = document.getElementById("typeExpense");
-
-      let currentType = "income";
-
-      function openModal() {
-        if (!backdrop) return;
-        backdrop.style.display = "flex";
+      const selected = sp.id === selectedSubId;
+      if (selected){
+        item.style.outline = "2px solid #000080";
+        item.style.outlineOffset = "1px";
       }
 
-      function closeModal() {
-        if (!backdrop || !form) return;
-        backdrop.style.display = "none";
-        form.reset();
-        currentType = "income";
-        typeIncome?.classList.add("active-income");
-        typeExpense?.classList.remove("active-expense");
+      const budgetStr = fmtViewMoney(sp.budgetArs);
+      const spentStr = fmtViewMoney(spentArs);
+
+      item.innerHTML = `
+        <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+          <div style="font-weight:900;">${escapeHtml(sp.name)}</div>
+          <span class="chip" style="border-color:#777;">
+            ${statusChip(status)} ${pctFinite(pct)}
+          </span>
+        </div>
+        <div class="hint">Presupuesto: <b>${budgetStr}</b> · Real: <b>${spentStr}</b></div>
+      `;
+
+      item.addEventListener("click", () => {
+        selectedSubId = sp.id;
+        renderAll();
+      });
+
+      elSubList.appendChild(item);
+    });
+  }
+
+  function renderExpensesPanel(){
+    const sp = getSelectedSub();
+
+    if (!sp){
+      elSelectedHint.style.display = "";
+      elExpensePanel.style.display = "none";
+      return;
+    }
+
+    elSelectedHint.style.display = "none";
+    elExpensePanel.style.display = "flex";
+
+    const spentArs = sumExpensesArs(sp.id);
+    const diffArs = (sp.budgetArs ?? 0) - spentArs;
+    const pct = sp.budgetArs > 0 ? (spentArs / sp.budgetArs) * 100 : 0;
+
+    const viewBudget = fmtViewMoney(sp.budgetArs);
+    const viewSpent = fmtViewMoney(spentArs);
+    const viewDiff = fmtViewMoney(diffArs);
+
+    elSubKpis.innerHTML = `
+      <div><b>Subproyecto:</b> ${escapeHtml(sp.name)}</div>
+      <div>Presupuesto: <b>${viewBudget}</b> · Real: <b>${viewSpent}</b> · Dif: <b>${viewDiff}</b> · Ejec: <b>${pctFinite(pct)}</b></div>
+    `;
+
+    renderExpensesTable();
+  }
+
+  function renderExpensesTable(){
+    const sp = getSelectedSub();
+    if (!sp) return;
+
+    const q = (elExSearch.value || "").trim().toLowerCase();
+    const sort = elExSort.value;
+
+    let rows = state.expenses.filter(e => e.subId === sp.id);
+
+    if (q){
+      rows = rows.filter(e =>
+        (e.concept || "").toLowerCase().includes(q) ||
+        (e.notes || "").toLowerCase().includes(q)
+      );
+    }
+
+    rows.sort((a,b) => {
+      const da = a.date || "";
+      const db = b.date || "";
+      const aa = safeNum(a.ars, 0);
+      const ab = safeNum(b.ars, 0);
+
+      switch(sort){
+        case "date_asc": return da.localeCompare(db) || (a.createdAt - b.createdAt);
+        case "date_desc": return db.localeCompare(da) || (b.createdAt - a.createdAt);
+        case "amt_asc": return aa - ab;
+        case "amt_desc": return ab - aa;
+        default: return (b.createdAt - a.createdAt);
+      }
+    });
+
+    elExTableBody.innerHTML = "";
+
+    if (!rows.length){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="6" class="muted">No hay gastos (o tu búsqueda no encontró nada).</td>`;
+      elExTableBody.appendChild(tr);
+      return;
+    }
+
+    for (const e of rows){
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${escapeHtml(e.date || "")}</td>
+        <td><b>${escapeHtml(e.concept || "")}</b></td>
+        <td>${fmtViewMoney(safeNum(e.ars, 0), "ARS")}</td>
+        <td>${fmtViewMoney(safeNum(e.usd, 0), "USD")}</td>
+        <td>${escapeHtml(e.notes || "")}</td>
+        <td class="actions"></td>
+      `;
+
+      const tdAct = tr.querySelector("td.actions");
+      const btnEdit = document.createElement("button");
+      btnEdit.className = "secondary";
+      btnEdit.textContent = "Editar";
+      btnEdit.addEventListener("click", () => editExpense(e.id));
+
+      const btnDel = document.createElement("button");
+      btnDel.className = "secondary";
+      btnDel.textContent = "Borrar";
+      btnDel.style.marginLeft = "6px";
+      btnDel.addEventListener("click", () => deleteExpense(e.id));
+
+      tdAct.appendChild(btnEdit);
+      tdAct.appendChild(btnDel);
+
+      elExTableBody.appendChild(tr);
+    }
+  }
+
+  function renderDashboard(){
+    const rate = safeNum(state.usdRate, 0);
+
+    const totalBudgetArs = state.subprojects.reduce((acc,s) => acc + safeNum(s.budgetArs, 0), 0);
+    const totalSpentArs = state.expenses.reduce((acc,e) => acc + safeNum(e.ars, 0), 0);
+    const diffArs = totalBudgetArs - totalSpentArs;
+
+    const pct = totalBudgetArs > 0 ? (totalSpentArs / totalBudgetArs) * 100 : 0;
+
+    // KPI: primary value based on viewCurrency
+    elKpiBudget.textContent = fmtViewMoney(totalBudgetArs);
+    elKpiSpent.textContent  = fmtViewMoney(totalSpentArs);
+    elKpiDiff.textContent   = fmtViewMoney(diffArs);
+    elKpiPct.textContent    = pctFinite(pct);
+
+    // Secondary chips if BOTH
+    const showBoth = state.viewCurrency === "BOTH";
+    elKpiBudget2.style.display = showBoth ? "inline-flex" : "none";
+    elKpiSpent2.style.display  = showBoth ? "inline-flex" : "none";
+    elKpiDiff2.style.display   = showBoth ? "inline-flex" : "none";
+
+    if (showBoth && rate > 0){
+      elKpiBudget2.textContent = `USD ${fmtMoney(totalBudgetArs / rate, "USD")}`;
+      elKpiSpent2.textContent  = `USD ${fmtMoney(totalSpentArs / rate, "USD")}`;
+      elKpiDiff2.textContent   = `USD ${fmtMoney(diffArs / rate, "USD")}`;
+    }
+
+    // Status chip
+    let status = "ok";
+    if (pct > 80 && pct <= 100) status = "warn";
+    if (pct > 100) status = "bad";
+    elKpiStatus.innerHTML = `${statusChip(status)} ${statusText(status)}`;
+
+    // Bars
+    elBars.innerHTML = "";
+
+    if (!state.subprojects.length){
+      const box = document.createElement("div");
+      box.className = "bevel";
+      box.style.padding = "10px";
+      box.innerHTML = `<div class="hint">Creá subproyectos para ver el comparativo Presupuesto vs Real.</div>`;
+      elBars.appendChild(box);
+      return;
+    }
+
+    // Determine scale (max budget/spent)
+    const items = state.subprojects.map(sp => {
+      const budget = safeNum(sp.budgetArs, 0);
+      const spent = sumExpensesArs(sp.id);
+      return { sp, budget, spent };
+    });
+    const max = Math.max(1, ...items.map(i => Math.max(i.budget, i.spent)));
+
+    for (const it of items){
+      const pctSpent = (it.spent / max) * 100;
+      const pctBudget = (it.budget / max) * 100;
+
+      const pctExec = it.budget > 0 ? (it.spent / it.budget) * 100 : 0;
+      const st = pctExec <= 80 ? "ok" : pctExec <= 100 ? "warn" : "bad";
+
+      const wrap = document.createElement("div");
+      wrap.className = "bar-item";
+
+      const left = document.createElement("div");
+      left.className = "bar-name";
+      left.innerHTML = `
+        <div style="display:flex; gap:8px; align-items:center; justify-content:space-between;">
+          <b>${escapeHtml(it.sp.name)}</b>
+          <span class="chip">${statusChip(st)} ${pctFinite(pctExec)}</span>
+        </div>
+        <div class="muted">P: ${fmtViewMoney(it.budget)} · R: ${fmtViewMoney(it.spent)}</div>
+      `;
+
+      const right = document.createElement("div");
+      right.className = "bar-wrap";
+
+      const barBudget = document.createElement("div");
+      barBudget.className = "bar-budget";
+      barBudget.style.width = `${clamp(pctBudget, 0, 100)}%`;
+
+      const barSpent = document.createElement("div");
+      barSpent.className = "bar-spent";
+      barSpent.style.width = `${clamp(pctSpent, 0, 100)}%`;
+
+      const barOver = document.createElement("div");
+      barOver.className = "bar-over";
+      if (it.spent > it.budget && it.budget > 0){
+        barOver.style.display = "block";
+        const start = (it.budget / max) * 100;
+        const width = ((it.spent - it.budget) / max) * 100;
+        barOver.style.left = `${clamp(start,0,100)}%`;
+        barOver.style.width = `${clamp(width,0,100)}%`;
+      } else {
+        barOver.style.display = "none";
       }
 
-      fab?.addEventListener("click", openModal);
-      close?.addEventListener("click", closeModal);
-      backdrop?.addEventListener("click", (e) => {
-        if (e.target === backdrop) closeModal();
-      });
+      const label = document.createElement("div");
+      label.className = "bar-label";
+      label.textContent = "Presupuesto (celeste) vs Real (azul)";
 
-      typeIncome?.addEventListener("click", () => {
-        currentType = "income";
-        typeIncome.classList.add("active-income");
-        typeExpense.classList.remove("active-expense");
-      });
+      right.appendChild(barBudget);
+      right.appendChild(barSpent);
+      right.appendChild(barOver);
+      right.appendChild(label);
 
-      typeExpense?.addEventListener("click", () => {
-        currentType = "expense";
-        typeExpense.classList.add("active-expense");
-        typeIncome.classList.remove("active-income");
-      });
-
-      form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const amount = parseFloat(document.getElementById("amountInput").value || "0");
-        const category = document.getElementById("categorySelect").value;
-        const date = document.getElementById("dateInput").value || new Date().toISOString().slice(0,10);
-        const note = document.getElementById("noteInput").value;
-
-        const tx = {
-          amount,
-          type: currentType,
-          category,
-          date,
-          note
-        };
-
-        try {
-          await saveTransactionFirebase(tx);
-          console.log("Guardado en Firebase:", tx);
-          alert("Movimiento guardado en Firebase ✅");
-          closeModal();
-        } catch (err) {
-          console.error(err);
-          alert("Error guardando en Firebase 😢\nRevisá consola.");
-        }
-      });
+      wrap.appendChild(left);
+      wrap.appendChild(right);
+      elBars.appendChild(wrap);
     }
+  }
 
-    function init() {
-      renderDays();
-      renderBubbles();
-      renderGoals();
-      setupTabs();
-      setupModal();
+  // ---------- Expense actions ----------
+  function editExpense(expenseId){
+    const e = state.expenses.find(x => x.id === expenseId);
+    if (!e) return;
+
+    const newConcept = prompt("Concepto:", e.concept || "");
+    if (newConcept === null) return;
+
+    const newDate = prompt("Fecha (YYYY-MM-DD):", e.date || isoDate(new Date()));
+    if (newDate === null) return;
+
+    const newArs = prompt("ARS:", String(e.ars ?? 0));
+    if (newArs === null) return;
+
+    const newUsd = prompt("USD:", String(e.usd ?? 0));
+    if (newUsd === null) return;
+
+    const newNotes = prompt("Notas:", e.notes || "");
+    if (newNotes === null) return;
+
+    const ars = safeNum(newArs, 0);
+    const usd = safeNum(newUsd, 0);
+
+    if (ars <= 0 && usd <= 0) return toast("Monto inválido.");
+
+    e.concept = newConcept.trim() || e.concept;
+    e.date = (newDate || "").trim() || e.date;
+    e.ars = round2(ars);
+    e.usd = round2(usd);
+    e.notes = (newNotes || "").trim();
+
+    markDirtyAndSave();
+    renderAll();
+  }
+
+  function deleteExpense(expenseId){
+    const e = state.expenses.find(x => x.id === expenseId);
+    if (!e) return;
+
+    const ok = confirm(`Borrar gasto "${e.concept}"?`);
+    if (!ok) return;
+
+    state.expenses = state.expenses.filter(x => x.id !== expenseId);
+    markDirtyAndSave();
+    renderAll();
+  }
+
+  // ---------- Persistence ----------
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return structuredClone(DEFAULTS);
+      const obj = JSON.parse(raw);
+      const normalized = validateAndNormalize(obj);
+      return normalized || structuredClone(DEFAULTS);
+    }catch{
+      return structuredClone(DEFAULTS);
     }
+  }
 
-    document.addEventListener("DOMContentLoaded", init);
-  </script>
+  function validateAndNormalize(obj){
+    if (!obj || typeof obj !== "object") return null;
+
+    const out = structuredClone(DEFAULTS);
+
+    out.app_version = 1;
+    out.projectName = String(obj.projectName ?? out.projectName);
+    out.usdRate = safeNum(obj.usdRate, out.usdRate);
+    out.viewCurrency = ["ARS","USD","BOTH"].includes(obj.viewCurrency) ? obj.viewCurrency : out.viewCurrency;
+
+    // Subprojects
+    const sps = Array.isArray(obj.subprojects) ? obj.subprojects : [];
+    out.subprojects = sps
+      .filter(s => s && typeof s === "object")
+      .map(s => ({
+        id: String(s.id || uid()),
+        name: String(s.name || "Subproyecto"),
+        budgetArs: safeNum(s.budgetArs, 0)
+      }));
+
+    const spIds = new Set(out.subprojects.map(s => s.id));
+
+    // Expenses
+    const exs = Array.isArray(obj.expenses) ? obj.expenses : [];
+    out.expenses = exs
+      .filter(e => e && typeof e === "object")
+      .map(e => ({
+        id: String(e.id || uid()),
+        subId: String(e.subId || ""),
+        date: String(e.date || ""),
+        concept: String(e.concept || ""),
+        ars: safeNum(e.ars, 0),
+        usd: safeNum(e.usd, 0),
+        notes: String(e.notes || ""),
+        createdAt: Number(e.createdAt || Date.now())
+      }))
+      .filter(e => spIds.has(e.subId)); // keep only valid sub refs
+
+    return out;
+  }
+
+  function saveNow(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    setSaved(true);
+  }
+
+  function markDirtyAndSave(){
+    setSaved(false);
+    clearTimeout(dirtyTimer);
+    dirtyTimer = setTimeout(() => {
+      saveNow();
+    }, 250);
+  }
+
+  function setSaved(isSaved){
+    elPillSaved.textContent = isSaved ? "● guardado" : "● guardando…";
+    elPillSaved.style.background = isSaved ? "#e9ffe9" : "#fff6d6";
+  }
+
+  // ---------- Helpers ----------
+  function getSelectedSub(){
+    return state.subprojects.find(s => s.id === selectedSubId) || null;
+  }
+
+  function sumExpensesArs(subId){
+    return state.expenses
+      .filter(e => e.subId === subId)
+      .reduce((acc,e) => acc + safeNum(e.ars, 0), 0);
+  }
+
+  function safeNum(v, fallback=0){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function round2(n){
+    return Math.round((safeNum(n,0) + Number.EPSILON) * 100) / 100;
+  }
+
+  function isoDate(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const da = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${da}`;
+  }
+
+  function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+
+  function fmtMoney(n, currency){
+    const val = safeNum(n,0);
+    // ARS: show with thousands separators; USD: 2 decimals
+    const opts = currency === "USD"
+      ? { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+      : { minimumFractionDigits: 0, maximumFractionDigits: 0 };
+    return val.toLocaleString("es-AR", opts);
+  }
+
+  function fmtViewMoney(ars, forceCurrency=null){
+    const rate = safeNum(state.usdRate, 0);
+    const view = forceCurrency || state.viewCurrency;
+
+    if (view === "ARS"){
+      return `ARS ${fmtMoney(ars, "ARS")}`;
+    }
+    if (view === "USD"){
+      const usd = rate > 0 ? (safeNum(ars,0) / rate) : 0;
+      return `USD ${fmtMoney(usd, "USD")}`;
+    }
+    // BOTH
+    const usd2 = rate > 0 ? (safeNum(ars,0) / rate) : 0;
+    return `ARS ${fmtMoney(ars, "ARS")} · USD ${fmtMoney(usd2, "USD")}`;
+  }
+
+  function pctFinite(p){
+    if (!Number.isFinite(p)) return "0%";
+    return `${Math.round(p)}%`;
+  }
+
+  function statusChip(st){
+    const map = { ok: "🟢", warn: "🟡", bad: "🔴" };
+    return map[st] || "⚪";
+  }
+
+  function statusText(st){
+    if (st === "ok") return "OK";
+    if (st === "warn") return "AL LÍMITE";
+    if (st === "bad") return "PASADO";
+    return "—";
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[c]));
+  }
+
+  function slug(s){
+    return String(s || "")
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-z0-9]+/g,"-")
+      .replace(/(^-|-$)/g,"")
+      .slice(0,60);
+  }
+
+  function toast(msg){
+    // Simple Win98 alert vibe
+    alert(msg);
+  }
+
+  function openModal(open){
+    elModalBackdrop.style.display = open ? "flex" : "none";
+  }
+
+})();
+</script>
 </body>
 </html>
-
-
